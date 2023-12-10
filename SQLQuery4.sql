@@ -1,7 +1,7 @@
 create database data;
 
 CREATE TABLE Vehicle (
-    VehicleID INT PRIMARY KEY IDENTITY(1,1),
+    VehicleID INT PRIMARY KEY AUTO_INCREMENT(1,1),
     Make VARCHAR(255),
     Model VARCHAR(255),
     LicensePlate VARCHAR(50),
@@ -12,7 +12,7 @@ CREATE TABLE Vehicle (
 
 
 CREATE TABLE Parking (
-    ParkingID INT PRIMARY KEY IDENTITY(1,1),
+    ParkingID INT PRIMARY KEY AUTO_INCREMENT(1,1),
     Name VARCHAR(100),
     Location VARCHAR(255),
     Capacity INT
@@ -20,7 +20,7 @@ CREATE TABLE Parking (
 
 
 CREATE TABLE Maintenance (
-    MaintenanceID INT PRIMARY KEY IDENTITY(1,1),
+    MaintenanceID INT PRIMARY KEY AUTO_INCREMENT(1,1),
     VehicleID INT,
     MaintenanceType VARCHAR(100),
     StartTime DATETIME,
