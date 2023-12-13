@@ -2,45 +2,47 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+	"encoding/json"
 	"log"
+	"net/http"
+	"time"
 
+	"github.com/gorilla/mux"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func main() {
-	password := "*****" 
+var db *sql.DB
 
-	// Database connection parameters
-	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(localhost:3306)/data", password))
+type Vehicle struct {
+	VehicleID    int       `json:"VehicleID"`
+	Make         string    `json:"Make"`
+	Model        string    `json:"Model"`
+	LicensePlate string    `json:"LicensePlate"`
+	EntryTime    time.Time `json:"EntryTime"`
+	ExitTime     time.Time `json:"ExitTime"`
+	IsParked     bool      `json:"IsParked"`
+}
+
+type Parking struct {
+	ParkingID int    `json:"ParkingID"`
+	Name      string `json:"Name"`
+	Location  string `json:"Location"`
+	Capacity  int    `json:"Capacity"`
+}
+
+type Maintenance struct {
+	MaintenanceID   int       `json:"MaintenanceID"`
+	VehicleID       int       `json:"VehicleID"`
+	MaintenanceType string    `json:"MaintenanceType"`
+	StartTime       time.Time `json:"StartTime"`
+	EndTime         time.Time `json:"EndTime"`
+	IsCompleted     bool      `json:"IsCompleted"`
+}
+
+func main() {
+	var err error
+	db, err = sql.Open("mysql", "username:password@tcp(your-host:your-port)/your-database")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
-	// Check if the connection to the database is successful
-	err = db.Ping()
-	if err != nil {
-		log.Fatal("Error connecting to the database:", err)
-	}
-	fmt.Println("Connected to the database!")
-
-	// Perform a sample query on Vehicle table
-	rows, err := db.Query("SELECT * FROM Vehicle")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	// Process the query result
-	for rows.Next() {
-		var vehicleID int
-		var make, model, licensePlate string
-		var entryTime, exitTime string
-		var isParked bool
-		if err := rows.Scan(&vehicleID, &make, &model, &licensePlate, &entryTime, &exitTime, &isParked); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("VehicleID: %d, Make: %s, Model: %s, LicensePlate: %s, EntryTime: %s, ExitTime: %s, IsParked: %t\n", vehicleID, make, model, licensePlate, entryTime, exitTime, isParked)
-	}
-}
