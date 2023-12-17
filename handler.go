@@ -6,56 +6,50 @@ import (
 	"gofr.dev/pkg/errors"
 	"gofr.dev/pkg/gofr"
 
-	"GO-LANG/datastore"
-	"GO-LANG/model"
+	"simple-rest-api/datastore"
+	"simple-rest-api/model"
 )
 
 type handler struct {
-	store datastore.Inventory
+	store datastore.Student
 }
 
-func New(s datastore.Inventory) handler {
+func New(s datastore.Student) handler {
 	return handler{store: s}
 }
 
-func validateProductID(id string) (int, error) {
-	res, err := strconv.Atoi(id)
-	if err != nil {
-		return 0, err
-	}
-	return res, nil
-}
-
-func (h handler) GetProductByID(ctx *gofr.Context) (interface{}, error) {
-	ID := ctx.PathParam("ID")
-	if ID == "" {
+func (h handler) GetByID(ctx *gofr.Context) (interface{}, error) {
+	// ctx.PathParam() returns the path parameter from HTTP request.
+	id := ctx.PathParam("id")
+	if id == "" {
 		return nil, errors.MissingParam{Param: []string{"id"}}
 	}
 
-	if _, err := validateProductID(ID); err != nil {
+	if _, err := validateID(id); err != nil {
 		return nil, errors.InvalidParam{Param: []string{"id"}}
 	}
 
-	resp, err := h.store.GetByID(ctx, ID)
+	resp, err := h.store.GetByID(ctx, id)
 	if err != nil {
 		return nil, errors.EntityNotFound{
-			Entity: "product",
-			ID:     ID,
+			Entity: "student",
+			ID:     id,
 		}
 	}
 
 	return resp, nil
 }
 
-func (h handler) AddProduct(ctx *gofr.Context) (interface{}, error) {
-	var product model.Product
+func (h handler) Create(ctx *gofr.Context) (interface{}, error) {
+	var student model.Student
 
-	if err := ctx.Bind(&product); err != nil {
+	// ctx.Bind() binds the incoming data from the HTTP request to a provided interface (i).
+	if err := ctx.Bind(&student); err != nil {
 		ctx.Logger.Errorf("error in binding: %v", err)
 		return nil, errors.InvalidParam{Param: []string{"body"}}
 	}
 
-	resp, err := h.store.AddProduct(ctx, &product)
+	resp, err := h.store.Create(ctx, &student)
 	if err != nil {
 		return nil, err
 	}
@@ -63,26 +57,26 @@ func (h handler) AddProduct(ctx *gofr.Context) (interface{}, error) {
 	return resp, nil
 }
 
-func (h handler) UpdateProduct(ctx *gofr.Context) (interface{}, error) {
-	i := ctx.PathParam("ID")
+func (h handler) Update(ctx *gofr.Context) (interface{}, error) {
+	i := ctx.PathParam("id")
 	if i == "" {
 		return nil, errors.MissingParam{Param: []string{"id"}}
 	}
 
-	id, err := validateProductID(i)
+	id, err := validateID(i)
 	if err != nil {
 		return nil, errors.InvalidParam{Param: []string{"id"}}
 	}
 
-	var product model.Product
-	if err = ctx.Bind(&product); err != nil {
+	var student model.Student
+	if err = ctx.Bind(&student); err != nil {
 		ctx.Logger.Errorf("error in binding: %v", err)
 		return nil, errors.InvalidParam{Param: []string{"body"}}
 	}
 
-	product.ID = id
+	student.ID = id
 
-	resp, err := h.store.UpdateProduct(ctx, &product)
+	resp, err := h.store.Update(ctx, &student)
 	if err != nil {
 		return nil, err
 	}
@@ -90,20 +84,29 @@ func (h handler) UpdateProduct(ctx *gofr.Context) (interface{}, error) {
 	return resp, nil
 }
 
-func (h handler) RemoveProduct(ctx *gofr.Context) (interface{}, error) {
-	i := ctx.PathParam("ID")
+func (h handler) Delete(ctx *gofr.Context) (interface{}, error) {
+	i := ctx.PathParam("id")
 	if i == "" {
 		return nil, errors.MissingParam{Param: []string{"id"}}
 	}
 
-	id, err := validateProductID(i)
+	id, err := validateID(i)
 	if err != nil {
 		return nil, errors.InvalidParam{Param: []string{"id"}}
 	}
 
-	if err := h.store.RemoveProduct(ctx, id); err != nil {
+	if err := h.store.Delete(ctx, id); err != nil {
 		return nil, err
 	}
 
-	return "Product deleted successfully", nil
+	return "Deleted successfully", nil
+}
+
+func validateID(id string) (int, error) {
+	res, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+
+	return res, err
 }
