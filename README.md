@@ -1,5 +1,6 @@
-Simple REST API with Go
-This project implements a straightforward RESTful API in Go for managing student records within a database.
+#Simple REST API with Go
+
+##This project implements a straightforward RESTful API in Go for managing student records within a database.
 
 Overview
 The API is structured into several key components:
